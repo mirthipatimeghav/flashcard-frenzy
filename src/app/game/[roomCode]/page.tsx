@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
+import type { PageProps } from 'next';
 
 interface Score {
   user_id: string;
@@ -15,20 +16,16 @@ interface Question {
   question_text: string;
 }
 
-interface GamePageProps {
-  params: {
-    roomCode: string;
-  };
-}
-
-export default function GamePage({ params }: GamePageProps) {
+export default function GamePage({
+  params,
+  searchParams,
+}: PageProps<{ roomCode: string }>) {
   const [user, setUser] = useState<User | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [scores, setScores] = useState<Score[]>([]);
   const [answer, setAnswer] = useState('');
 
   useEffect(() => {
-    // Fetch current user
     const fetchUser = async () => {
       const {
         data: { user },
@@ -37,40 +34,32 @@ export default function GamePage({ params }: GamePageProps) {
     };
     fetchUser();
 
-    // Fetch the latest question
     const fetchInitialData = async () => {
-      const { data: qData, error } = await supabase
+      const { data: qData } = await supabase
         .from('questions')
         .select('*')
         .order('created_at', { ascending: false })
+        .limit(1)
         .single();
-
-      if (error) {
-        console.error('Error fetching question:', error);
-      } else {
-        setQuestion(qData);
-      }
+      setQuestion(qData);
     };
     fetchInitialData();
 
-    // Subscribe to score updates
     const channel = supabase
       .channel(`game-${params.roomCode}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'scores' },
         (payload) => {
-          if (payload.new) {
-            const newScore = payload.new as Score;
-            setScores((currentScores) => [...currentScores, newScore]);
-            console.log('Score updated!', payload);
-          }
-        }
+          const newScore = payload.new as Score;
+          setScores((currentScores) => [...currentScores, newScore]);
+          console.log('Score updated!', payload);
+        },
       )
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [params.roomCode]);
 
@@ -97,7 +86,7 @@ export default function GamePage({ params }: GamePageProps) {
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold">Room: {params.roomCode}</h1>
       <div className="grid grid-cols-3 gap-4 mt-4">
-        {/* Question Block */}
+        {/* Question Panel */}
         <div className="col-span-2 p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Question:</h2>
           <p className="text-4xl text-center p-8 bg-gray-100 rounded-lg">
