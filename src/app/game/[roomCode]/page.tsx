@@ -69,7 +69,8 @@ export default function GamePage({ params }: GamePageProps) {
 
   const handleAnswerSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!user || || !question) return;
+      // THIS IS THE FIX: The extra '||' has been removed
+      if (!user || !question) return;
 
       const { data, error } = await supabase.functions.invoke('submit-answer', {
           body: { questionId: question.id, submittedAnswer: answer },
