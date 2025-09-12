@@ -16,13 +16,8 @@ interface Question {
   question_text: string;
 }
 
-// Manually define the full props for a Next.js Page Component
-interface GamePageProps {
-  params: { roomCode: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export default function GamePage({ params }: GamePageProps) {
+// Correct way to type params in Next.js App Router
+export default function GamePage({ params }: { params: { roomCode: string } }) {
   const [user, setUser] = useState<User | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [scores, setScores] = useState<Score[]>([]);
@@ -36,7 +31,12 @@ export default function GamePage({ params }: GamePageProps) {
     fetchUser();
 
     const fetchInitialData = async () => {
-      const { data: qData } = await supabase.from('questions').select('*').order('created_at', { ascending: false }).limit(1).single();
+      const { data: qData } = await supabase
+        .from('questions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
       setQuestion(qData);
     };
     fetchInitialData();
@@ -58,21 +58,20 @@ export default function GamePage({ params }: GamePageProps) {
     };
   }, [params.roomCode]);
 
-
   const handleAnswerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !question) return;
 
     const { data, error } = await supabase.functions.invoke('submit-answer', {
-        body: { questionId: question.id, submittedAnswer: answer },
+      body: { questionId: question.id, submittedAnswer: answer },
     });
 
     if (error) {
-        console.error('Error submitting answer:', error);
-        alert('Error: ' + error.message);
+      console.error('Error submitting answer:', error);
+      alert('Error: ' + error.message);
     } else {
-        console.log('Answer submitted:', data);
-        setAnswer('');
+      console.log('Answer submitted:', data);
+      setAnswer('');
     }
   };
 
@@ -95,7 +94,10 @@ export default function GamePage({ params }: GamePageProps) {
               className="flex-grow p-2 border rounded-md"
               placeholder="Your Answer"
             />
-            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            >
               Submit
             </button>
           </form>
@@ -105,10 +107,13 @@ export default function GamePage({ params }: GamePageProps) {
           <h2 className="text-xl font-semibold mb-4">Scoreboard</h2>
           <ul>
             {scores.map((score, index) => (
-               <li key={index} className="flex justify-between p-2 bg-gray-50 rounded-md mb-2">
-                  <span>User: {score.user_id.substring(0, 8)}...</span>
-                  <strong>{score.points}</strong>
-               </li>
+              <li
+                key={index}
+                className="flex justify-between p-2 bg-gray-50 rounded-md mb-2"
+              >
+                <span>User: {score.user_id.substring(0, 8)}...</span>
+                <strong>{score.points}</strong>
+              </li>
             ))}
           </ul>
         </div>
