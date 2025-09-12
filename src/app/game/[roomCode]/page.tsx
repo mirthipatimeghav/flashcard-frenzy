@@ -4,8 +4,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
-import type { PageProps } from 'next';
 
+// Define types for our data
 interface Score {
   user_id: string;
   points: number;
@@ -16,10 +16,13 @@ interface Question {
   question_text: string;
 }
 
-export default function GamePage({
-  params,
-  searchParams,
-}: PageProps<{ roomCode: string }>) {
+// Manually define the full props for a Next.js Page Component
+interface GamePageProps {
+  params: { roomCode: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default function GamePage({ params }: GamePageProps) {
   const [user, setUser] = useState<User | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [scores, setScores] = useState<Score[]>([]);
@@ -27,20 +30,13 @@ export default function GamePage({
 
   useEffect(() => {
     const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
     };
     fetchUser();
 
     const fetchInitialData = async () => {
-      const { data: qData } = await supabase
-        .from('questions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      const { data: qData } = await supabase.from('questions').select('*').order('created_at', { ascending: false }).limit(1).single();
       setQuestion(qData);
     };
     fetchInitialData();
@@ -53,8 +49,7 @@ export default function GamePage({
         (payload) => {
           const newScore = payload.new as Score;
           setScores((currentScores) => [...currentScores, newScore]);
-          console.log('Score updated!', payload);
-        },
+        }
       )
       .subscribe();
 
@@ -63,20 +58,21 @@ export default function GamePage({
     };
   }, [params.roomCode]);
 
+
   const handleAnswerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !question) return;
 
     const { data, error } = await supabase.functions.invoke('submit-answer', {
-      body: { questionId: question.id, submittedAnswer: answer },
+        body: { questionId: question.id, submittedAnswer: answer },
     });
 
     if (error) {
-      console.error('Error submitting answer:', error);
-      alert('Error: ' + error.message);
+        console.error('Error submitting answer:', error);
+        alert('Error: ' + error.message);
     } else {
-      console.log('Answer submitted:', data);
-      setAnswer('');
+        console.log('Answer submitted:', data);
+        setAnswer('');
     }
   };
 
@@ -86,7 +82,6 @@ export default function GamePage({
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold">Room: {params.roomCode}</h1>
       <div className="grid grid-cols-3 gap-4 mt-4">
-        {/* Question Panel */}
         <div className="col-span-2 p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Question:</h2>
           <p className="text-4xl text-center p-8 bg-gray-100 rounded-lg">
@@ -100,27 +95,20 @@ export default function GamePage({
               className="flex-grow p-2 border rounded-md"
               placeholder="Your Answer"
             />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
+            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
               Submit
             </button>
           </form>
         </div>
 
-        {/* Scoreboard */}
         <div className="p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Scoreboard</h2>
           <ul>
             {scores.map((score, index) => (
-              <li
-                key={index}
-                className="flex justify-between p-2 bg-gray-50 rounded-md mb-2"
-              >
-                <span>User: {score.user_id.substring(0, 8)}...</span>
-                <strong>{score.points}</strong>
-              </li>
+               <li key={index} className="flex justify-between p-2 bg-gray-50 rounded-md mb-2">
+                  <span>User: {score.user_id.substring(0, 8)}...</span>
+                  <strong>{score.points}</strong>
+               </li>
             ))}
           </ul>
         </div>
