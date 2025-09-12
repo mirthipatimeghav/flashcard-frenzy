@@ -16,7 +16,15 @@ interface Question {
   question_text: string;
 }
 
-export default function GamePage({ params }: { params: { roomCode: string } }) {
+// THIS IS THE FIX: We create a dedicated interface for the page's props
+interface GamePageProps {
+  params: {
+    roomCode: string;
+  };
+}
+
+// AND WE USE THE NEW INTERFACE HERE
+export default function GamePage({ params }: GamePageProps) {
   const [user, setUser] = useState<User | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [scores, setScores] = useState<Score[]>([]);
@@ -31,10 +39,7 @@ export default function GamePage({ params }: { params: { roomCode: string } }) {
     fetchUser();
 
     // Fetch initial game state
-    // You'd expand this to get the match_id from the roomCode
     const fetchInitialData = async () => {
-        // For simplicity, fetching the latest question.
-        // In a real app, you'd fetch the question for the current match.
         const { data: qData } = await supabase.from('questions').select('*').order('created_at', { ascending: false }).limit(1).single();
         setQuestion(qData);
     };
@@ -48,7 +53,6 @@ export default function GamePage({ params }: { params: { roomCode: string } }) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'scores' },
         (payload) => {
-          // When a new score is inserted, add it to our local state
           const newScore = payload.new as Score;
           setScores((currentScores) => [...currentScores, newScore]);
           console.log('Score updated!', payload);
@@ -65,10 +69,8 @@ export default function GamePage({ params }: { params: { roomCode: string } }) {
 
   const handleAnswerSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!user || !question) return;
+      if (!user || || !question) return;
 
-      // IMPORTANT: Call a serverless function to check the answer
-      // This prevents cheating and handles race conditions.
       const { data, error } = await supabase.functions.invoke('submit-answer', {
           body: { questionId: question.id, submittedAnswer: answer },
       });
