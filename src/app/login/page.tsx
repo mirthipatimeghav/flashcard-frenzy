@@ -12,28 +12,24 @@ export default function LoginPage() {
       setError("Please enter a room code");
       return;
     }
-
-    // Save room code locally (optional)
     localStorage.setItem("roomCode", roomCode);
-
-    // Navigate to dynamic game page
     router.push(`/game/${roomCode}`);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">Enter Room Code</h1>
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 text-white">
+      <h1 className="text-4xl font-bold mb-6 drop-shadow-md">Enter Room Code</h1>
       <input
         type="text"
         value={roomCode}
         onChange={(e) => setRoomCode(e.target.value)}
         placeholder="Room Code"
-        className="border p-2 mb-3 rounded"
+        className="border-2 border-white bg-white bg-opacity-20 placeholder-white text-white p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300"
       />
-      {error && <p className="text-red-500 mb-2">{error}</p>}
+      {error && <p className="text-red-300 mb-2">{error}</p>}
       <button
         onClick={handleJoin}
-        className="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600"
+        className="px-8 py-3 bg-yellow-400 text-purple-700 font-semibold rounded-2xl shadow-lg hover:bg-yellow-500 hover:scale-105 transition-transform"
       >
         Join
       </button>

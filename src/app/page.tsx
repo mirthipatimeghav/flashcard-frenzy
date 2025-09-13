@@ -1,20 +1,15 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function StartPage() {
   const router = useRouter();
 
-  const handleLoginClick = () => {
-    router.push("/login"); // navigate to login page
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6">Flashcard Frenzy</h1>
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 text-white">
+      <h1 className="text-5xl font-extrabold mb-8 drop-shadow-lg">Flashcard Frenzy</h1>
       <button
-        onClick={handleLoginClick}
-        className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+        onClick={() => router.push("/login to Play")}
+        className="px-8 py-4 bg-yellow-400 text-purple-700 font-bold rounded-2xl shadow-lg hover:bg-yellow-500 hover:scale-105 transition-transform"
       >
         Login
       </button>
