@@ -24,7 +24,7 @@ export default function LoginPage() {
         value={roomCode}
         onChange={(e) => setRoomCode(e.target.value)}
         placeholder="Room Code"
-        className="border-2 border-white bg-white bg-opacity-20 placeholder-white text-white p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+        className="border-2 border-white bg-white bg-opacity-30 placeholder-gray-200 text-black p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300"
       />
       {error && <p className="text-red-300 mb-2">{error}</p>}
       <button

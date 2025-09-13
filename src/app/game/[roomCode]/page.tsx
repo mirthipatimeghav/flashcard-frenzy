@@ -8,16 +8,17 @@ interface GamePageProps {
 
 export default function GamePage({ params }: GamePageProps) {
   const router = useRouter();
-  const [roomCode, setRoomCode] = useState<string>("");
+  const roomCode = params.roomcode; // get directly from URL
 
   useEffect(() => {
-    const code = params.roomcode || localStorage.getItem("roomCode");
-    if (!code) {
-      router.push("/"); // redirect to start if no room code
-    } else {
-      setRoomCode(code);
+    if (!roomCode) {
+      router.push("/"); // redirect if no room code in URL
     }
-  }, [params.roomcode, router]);
+  }, [roomCode, router]);
+
+  if (!roomCode) {
+    return null; // or a loader
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-tr from-pink-400 via-red-500 to-yellow-400 text-white">
